@@ -1,0 +1,90 @@
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# WordPress core (don't track)
+wp-admin/
+wp-includes/
+wp-*.php
+license.txt
+readme.html
+xmlrpc.php
+index.php
+
+# Configuration files (CRITICAL - Contains sensitive data!)
+wp-config.php
+wp-config-local.php
+.htaccess
+.env
+.env.local
+.env.production
+
+# Backup files and scripts output
+*.backup
+backups/
+*.sql
+*.sql.gz
+*.db
+
+# Dependencies / build outputs
+node_modules/
+vendor/
+*.log
+*.sql
+*.sql.gz
+*.tar
+*.zip
+*.bak
+npm-debug.log
+yarn-error.log
+
+# Uploads & caches
+wp-content/uploads/
+wp-content/cache/
+wp-content/backups-*/
+wp-content/debug.log
+wp-content/logs/
+error_log
+debug.log
+
+# LiteSpeed Cache specific (since you use it)
+wp-content/.litespeed_conf.dat
+wp-content/litespeed/
+
+# WordPress specific cache/temp files
+wp-content/w3tc-config/
+wp-content/object-cache.php
+wp-content/advanced-cache.php
+
+# Database dumps and backups
+*.sql
+*.sql.gz
+*.db
+
+# Ignore large/common third-party themes
+wp-content/themes/twenty*/
+
+# Ignore large/common third-party plugins (can be reinstalled)
+wp-content/plugins/akismet/
+wp-content/plugins/hello.php
+wp-content/plugins/jetpack/
+wp-content/plugins/woocommerce/
+wp-content/plugins/wordfence/
+wp-content/plugins/litespeed-cache/
+wp-content/plugins/gravityforms/
+wp-content/plugins/advanced-custom-fields-pro/
+wp-content/plugins/wpmu-dev-seo/
+wp-content/plugins/wpmudev-updates/
+
+# Track everything else (including peptidology theme and custom plugins)
+# This allows you to see themes/plugins that need manual updates
+
+# Always track these important files
+!wp-content/themes/index.php
+!wp-content/plugins/index.php
+!wp-content/mu-plugins/

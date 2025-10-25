@@ -1,0 +1,145 @@
+{
+  "required_plugins": {
+    "free_plugins": [
+      {
+        "name": "WooCommerce",
+        "slug": "woocommerce",
+        "version": "latest",
+        "install_method": "wp_cli",
+        "activate": true,
+        "note": "E-commerce platform"
+      },
+      {
+        "name": "Classic Editor",
+        "slug": "classic-editor",
+        "version": "latest",
+        "install_method": "wp_cli",
+        "activate": true,
+        "note": "WordPress classic editor"
+      },
+      {
+        "name": "Classic Widgets",
+        "slug": "classic-widgets",
+        "version": "latest",
+        "install_method": "wp_cli",
+        "activate": true,
+        "note": "WordPress classic widgets"
+      },
+      {
+        "name": "Query Monitor",
+        "slug": "query-monitor",
+        "version": "latest",
+        "install_method": "wp_cli",
+        "activate": true,
+        "note": "Development debugging tool"
+      }
+    ],
+    "premium_plugins": [
+      {
+        "name": "Gravity Forms",
+        "slug": "gravityforms",
+        "install_method": "manual_download",
+        "download_source": "test_server",
+        "note": "Premium form builder - download from test server wp-content/plugins/gravityforms/"
+      },
+      {
+        "name": "Advanced Custom Fields Pro",
+        "slug": "advanced-custom-fields-pro",
+        "install_method": "manual_download",
+        "download_source": "test_server",
+        "note": "Premium custom fields - download from test server"
+      },
+      {
+        "name": "WooCommerce Extensions",
+        "plugins": [
+          "auxpay-payment-gateway-2",
+          "coinbase-commerce-for-woocommerce-premium",
+          "wc-zelle-pro",
+          "edebit-direct-draft-plaid-gateway",
+          "wp-nmi-gateway-pci-woocommerce",
+          "checkout-fees-for-woocommerce",
+          "woo-coupon-usage-pro",
+          "woo-variation-gallery",
+          "woo-variation-swatches"
+        ],
+        "install_method": "manual_download",
+        "download_source": "test_server",
+        "note": "Payment gateways and WooCommerce extensions"
+      },
+      {
+        "name": "Marketing & Analytics",
+        "plugins": [
+          "wp-marketing-automations",
+          "funnel-builder",
+          "funnel-builder-pro",
+          "facebook-for-woocommerce",
+          "google-listings-and-ads",
+          "duracelltomi-google-tag-manager",
+          "omnisend-connect",
+          "triple-whale",
+          "le-pixel-woo-main"
+        ],
+        "install_method": "manual_download",
+        "download_source": "test_server"
+      }
+    ],
+    "large_plugins_reinstall": [
+      {
+        "name": "Jetpack",
+        "slug": "jetpack",
+        "install_method": "wp_cli",
+        "note": "Large plugin - reinstall rather than track"
+      },
+      {
+        "name": "Wordfence Security",
+        "slug": "wordfence",
+        "install_method": "wp_cli",
+        "note": "Large security plugin"
+      },
+      {
+        "name": "LiteSpeed Cache",
+        "slug": "litespeed-cache",
+        "install_method": "wp_cli",
+        "note": "Large caching plugin"
+      },
+      {
+        "name": "WPMU DEV SEO",
+        "slug": "wpmu-dev-seo",
+        "install_method": "manual_download",
+        "download_source": "test_server",
+        "note": "WPMU DEV membership required"
+      }
+    ]
+  },
+  "custom_content": {
+    "themes": [
+      {
+        "name": "Peptidology Theme",
+        "slug": "peptidology",
+        "track_in_git": true,
+        "note": "Custom theme - fully tracked"
+      }
+    ],
+    "mu_plugins": {
+      "track_in_git": true,
+      "note": "Must-use plugins directory"
+    }
+  },
+  "manual_downloads": {
+    "database": {
+      "source": "test_server",
+      "filename": "peptidology_backup.sql",
+      "import_script": "scripts/import-database.bat"
+    },
+    "uploads": {
+      "source": "test_server",
+      "path": "wp-content/uploads/",
+      "note": "Media files and user uploads"
+    },
+    "htaccess": {
+      "source": "test_server",
+      "filename": ".htaccess",
+      "note": "Server configuration - customize for local"
+    }
+  }
+}

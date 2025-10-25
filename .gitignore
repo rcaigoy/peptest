@@ -1,34 +1,115 @@
-# OS/IDE
+# ==========================================
+#  AGGRESSIVE GITIGNORE - TRACK ONLY ESSENTIALS
+# ==========================================
+
+# OS/IDE files
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# WordPress core (don’t track)
+# WordPress core (never track)
 wp-admin/
 wp-includes/
 wp-*.php
 license.txt
 readme.html
+xmlrpc.php
+index.php
 
-# Dependencies / build outputs
-node_modules/
-vendor/
-*.log
-*.sql
-*.tar
-*.zip
+# Configuration files (CRITICAL - Contains sensitive data!)
+wp-config.php
+wp-config-local.php
+.htaccess
+.htaccess.*
+.htaccess.off
+.htaccess.backup
+.user.ini
+php.ini
+web.config
+.env
+.env.*
+.env.local
+.env.production
 
-# Uploads & caches
+# Sensitive files and credentials
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*password*
+*secret*
+*private*
+*credential*
+
+# EXCLUDE ALL PLUGINS (except specific exceptions below)
+wp-content/plugins/*/
+
+# ONLY track these plugin files:
+!wp-content/plugins/index.php
+# Track custom plugin configurations if they exist
+!wp-content/plugins/*/peptidology-config.json
+!wp-content/plugins/*/custom-settings.php
+
+# EXCLUDE ALL THEMES except peptidology
+wp-content/themes/*/
+!wp-content/themes/index.php
+!wp-content/themes/peptidology/
+
+# Uploads, caches, logs (never track)
 wp-content/uploads/
 wp-content/cache/
-wp-content/backups-*/
+wp-content/backups*/
+wp-content/debug.log
+wp-content/logs/
+wp-content/.litespeed_conf.dat
+wp-content/litespeed/
+wp-content/w3tc-config/
+wp-content/object-cache.php
+wp-content/advanced-cache.php
+*.log
 
-# Ignore all themes/plugins by default…
-wp-content/themes/*
-wp-content/plugins/*
+# Backup files and database dumps
+*.backup
+*.bak
+*.old
+*.orig
+*.rej
+*~
+backups/
+*.sql
+*.sql.gz
+*.db
+*.sqlite
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
 
-# …but track YOUR custom code (rename these!)
-!wp-content/themes/your-theme/
-!wp-content/plugins/your-custom-plugin/
+# Temporary files
+*.tmp
+*.temp
+
+# Dependencies and build files
+node_modules/
+vendor/
+npm-debug.log
+yarn-error.log
+
+# ALWAYS TRACK these essential directories
 !wp-content/mu-plugins/
+!config/
+!scripts/
+
+# Track documentation and setup files
+!README.md
+!.env.example
+!wp-config-template.php
+!wp-config-sample.php
