@@ -117,3 +117,6 @@ yarn-error.log
 !.env.example
 !wp-config-template.php
 !wp-config-sample.php
+
+// db config
+db-config.php
