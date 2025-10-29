@@ -61,6 +61,7 @@ wp-content/plugins/*/
 wp-content/themes/*/
 !wp-content/themes/index.php
 !wp-content/themes/peptidology*/
+!wp-content/themes/peptidology*/**
 
 # Uploads, caches, logs (never track)
 wp-content/uploads/
@@ -84,6 +85,7 @@ wp-content/advanced-cache.php
 *~
 backups/
 *.sql
+!sql-indexes/*.sql
 *.sql.gz
 *.db
 *.sqlite
@@ -107,6 +109,8 @@ yarn-error.log
 !wp-content/mu-plugins/
 !config/
 !scripts/
+!peptidology-new/**
+!sql-indexes/**
 
 # Track documentation and setup files
 !README.md
