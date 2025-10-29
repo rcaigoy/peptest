@@ -159,7 +159,9 @@ function peptidology_scripts() {
     wp_enqueue_style( 'peptidology-slick-theme', get_template_directory_uri().'/css/slick-theme.min.css', array(), null );
     wp_enqueue_style( 'peptidology-bootstrap', get_template_directory_uri().'/css/bootstrap.min.css', array(), null );
     wp_enqueue_style( 'peptidology-slick', get_template_directory_uri().'/css/slick.css', array(), null );
-	wp_enqueue_style( 'peptidology-style', get_stylesheet_uri().'?time='.time(), array(), _S_VERSION );
+	// PERFORMANCE: Removed cache busting (?time=) to enable browser caching
+	// WordPress will use version number (_S_VERSION) for cache invalidation
+	wp_enqueue_style( 'peptidology-style', get_stylesheet_uri(), array(), _S_VERSION );
 	wp_style_add_data( 'peptidology-style', 'rtl', 'replace' );
 
 	//wp_enqueue_script( 'peptidology-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
@@ -168,7 +170,8 @@ function peptidology_scripts() {
 	wp_enqueue_script( 'peptidology-bootstrap-bundle', get_template_directory_uri() . '/js/bootstrap.bundle.min.js', array(), '', true );
 	wp_enqueue_script( 'peptidology-slick', get_template_directory_uri() . '/js/slick.min.js', array(), '', true );
 	wp_enqueue_script( 'peptidology-matchHeight', get_template_directory_uri() . '/js/jquery.matchHeight-min.js', array(), '', true );
-	wp_enqueue_script( 'peptidology-common', get_template_directory_uri() . '/js/common.js?time='.time(), array(), '', true );
+	// PERFORMANCE: Removed cache busting (?time=) to enable browser caching
+	wp_enqueue_script( 'peptidology-common', get_template_directory_uri() . '/js/common.js', array(), _S_VERSION, true );
 	$shop_id = get_option( 'woocommerce_shop_page_id' ); 
 	global $wp_query;
 	wp_localize_script('peptidology-common', 'infinite_scroll_params', array(

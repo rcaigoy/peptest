@@ -1,0 +1,142 @@
+/**
+ * AJAX Cart Button Styles
+ * Ensures buttons look identical to links and provide good UX feedback
+ */
+
+/* Make buttons look like the original link buttons */
+.ajax_add_to_cart_button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    display: inline-block;
+}
+
+/* Loading state */
+.ajax_add_to_cart_button.loading {
+    opacity: 0.6;
+    cursor: wait;
+    position: relative;
+}
+
+.ajax_add_to_cart_button.loading::after {
+    content: '⏳';
+    margin-left: 5px;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+/* Added state (success) */
+.ajax_add_to_cart_button.added {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    animation: successPulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Hover state */
+.ajax_add_to_cart_button:hover:not(.loading):not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* Disabled state */
+.ajax_add_to_cart_button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Success notification */
+.ajax-cart-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Ensure button maintains theme styling */
+.cmn-btn.ajax_add_to_cart_button {
+    /* Inherit all cmn-btn styles */
+    text-decoration: none;
+}
+
+/* Center buttons in action area */
+.cmn-action-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cmn-action-area .cmn-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Out of stock button styling - same colors as regular button */
+.cmn-btn.out-of-stock {
+    /* Keep same background and text colors as regular buttons */
+    color: white !important;
+    /* opacity: 0.8; */
+    cursor: not-allowed !important;
+}
+
+.cmn-btn.out-of-stock:hover {
+    transform: none !important;
+    opacity: 0.8 !important;
+}
+
+/* Strikethrough for regular price when on sale */
+span.regular-price-strikethrough {
+    text-decoration: line-through;
+    opacity: 0.8;
+    margin-right: 8px;
+    color: inherit !important; /* Keep white color from button */
+}
+
+span.sale-price {
+    color: inherit !important; /* Keep white color from button */
+    /* font-weight: 700; */
+    text-decoration: underline;
+}
+
+/* Ensure both price spans display inline */
+.ajax_add_to_cart_button .woocommerce-Price-amount {
+    display: inline !important;
+}
+
+.ajax_add_to_cart_button .woocommerce-Price-amount bdi {
+    display: inline !important;
+}
+

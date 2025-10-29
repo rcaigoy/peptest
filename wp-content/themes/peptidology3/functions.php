@@ -159,8 +159,14 @@ function peptidology_scripts() {
     wp_enqueue_style( 'peptidology-slick-theme', get_template_directory_uri().'/css/slick-theme.min.css', array(), null );
     wp_enqueue_style( 'peptidology-bootstrap', get_template_directory_uri().'/css/bootstrap.min.css', array(), null );
     wp_enqueue_style( 'peptidology-slick', get_template_directory_uri().'/css/slick.css', array(), null );
-	wp_enqueue_style( 'peptidology-style', get_stylesheet_uri().'?time='.time(), array(), _S_VERSION );
+	// PERFORMANCE: Browser caching enabled (removed cache busting)
+	wp_enqueue_style( 'peptidology-style', get_stylesheet_uri(), array(), _S_VERSION );
 	wp_style_add_data( 'peptidology-style', 'rtl', 'replace' );
+	
+	// Headless mode styles
+	if ( ! is_checkout() && ! is_cart() && ! is_account_page() ) {
+		wp_enqueue_style( 'peptidology-headless', get_template_directory_uri() . '/css/headless.css', array(), _S_VERSION );
+	}
 
 	//wp_enqueue_script( 'peptidology-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 
@@ -168,7 +174,18 @@ function peptidology_scripts() {
 	wp_enqueue_script( 'peptidology-bootstrap-bundle', get_template_directory_uri() . '/js/bootstrap.bundle.min.js', array(), '', true );
 	wp_enqueue_script( 'peptidology-slick', get_template_directory_uri() . '/js/slick.min.js', array(), '', true );
 	wp_enqueue_script( 'peptidology-matchHeight', get_template_directory_uri() . '/js/jquery.matchHeight-min.js', array(), '', true );
-	wp_enqueue_script( 'peptidology-common', get_template_directory_uri() . '/js/common.js?time='.time(), array(), '', true );
+	// PERFORMANCE: Browser caching enabled (removed cache busting)
+	wp_enqueue_script( 'peptidology-common', get_template_directory_uri() . '/js/common.js', array(), _S_VERSION, true );
+	
+	// AJAX Cart Handler - Load on all pages for instant add-to-cart
+	wp_enqueue_script( 
+		'peptidology-ajax-cart', 
+		get_template_directory_uri() . '/js/ajax-cart.js', 
+		array('jquery'), 
+		_S_VERSION, 
+		true 
+	);
+	
 	$shop_id = get_option( 'woocommerce_shop_page_id' ); 
 	global $wp_query;
 	wp_localize_script('peptidology-common', 'infinite_scroll_params', array(
@@ -179,6 +196,61 @@ function peptidology_scripts() {
 	));
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );
+	}
+
+	// HEADLESS ARCHITECTURE: Load client-side rendering scripts
+	// Only load on non-checkout pages (checkout needs full WordPress)
+	if ( ! is_checkout() && ! is_cart() && ! is_account_page() ) {
+		// API Client
+		wp_enqueue_script( 
+			'peptidology-api-client', 
+			get_template_directory_uri() . '/js/api-client.js', 
+			array(), 
+			_S_VERSION, 
+			true 
+		);
+		
+		// Product Renderer
+		wp_enqueue_script( 
+			'peptidology-product-renderer', 
+			get_template_directory_uri() . '/js/product-renderer.js', 
+			array('peptidology-api-client'), 
+			_S_VERSION, 
+			true 
+		);
+		
+		// Shop Page Script (for archive pages)
+		if ( is_shop() || is_product_category() || is_product_tag() ) {
+			wp_enqueue_script( 
+				'peptidology-shop-page', 
+				get_template_directory_uri() . '/js/shop-page.js', 
+				array('peptidology-api-client', 'peptidology-product-renderer'), 
+				_S_VERSION, 
+				true 
+			);
+		}
+		
+		// Single Product Script (for product pages)
+		if ( is_product() ) {
+			wp_enqueue_script( 
+				'peptidology-single-product', 
+				get_template_directory_uri() . '/js/single-product.js', 
+				array('peptidology-api-client', 'peptidology-product-renderer'), 
+				_S_VERSION, 
+				true 
+			);
+		}
+		
+		// Home Page Script (if products are displayed on home)
+		if ( is_front_page() || is_home() ) {
+			wp_enqueue_script( 
+				'peptidology-home-page', 
+				get_template_directory_uri() . '/js/home-page.js', 
+				array('peptidology-api-client', 'peptidology-product-renderer'), 
+				_S_VERSION, 
+				true 
+			);
+		}
 	}
 
 }
@@ -284,6 +356,11 @@ require get_template_directory() . '/inc/customizer.php';
  * Customizer additions.
  */
 require get_template_directory() . '/inc/woo.php';
+
+/**
+ * Load headless template loader
+ */
+require get_template_directory() . '/inc/headless-template-loader.php';
 function remove_edit_button_from_frontend() {
     if ( is_user_logged_in() ) {
         remove_action( 'wp_footer', 'edit_post_link' ); // Removes the edit button
@@ -320,6 +397,204 @@ function remove_website_field_from_comment_form($fields) {
 }
 add_filter('comment_form_default_fields', 'remove_website_field_from_comment_form');
 
+/**
+ * ============================================================================
+ * PEPTIDOLOGY 3: Custom REST API Endpoints
+ * ============================================================================
+ * 
+ * Optimized product and cart APIs for maximum performance.
+ * Based on architecture in backend-planning/ folder.
+ * 
+ * Benefits:
+ * - Direct database queries (bypass WooCommerce overhead)
+ * - Minimal WordPress bootstrap
+ * - Cacheable responses
+ * - Prepares for eventual Next.js migration
+ */
 
+/**
+ * Register custom REST API endpoints
+ */
+add_action('rest_api_init', function() {
+    
+    // Optimized products list endpoint
+    register_rest_route('peptidology/v1', '/products', array(
+        'methods' => 'GET',
+        'callback' => 'peptidology_get_products_optimized',
+        'permission_callback' => '__return_true'
+    ));
+    
+    // Optimized single product endpoint
+    register_rest_route('peptidology/v1', '/products/(?P<id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'peptidology_get_product_optimized',
+        'permission_callback' => '__return_true'
+    ));
+    
+    // Featured products endpoint
+    register_rest_route('peptidology/v1', '/products/featured', array(
+        'methods' => 'GET',
+        'callback' => 'peptidology_get_featured_products',
+        'permission_callback' => '__return_true'
+    ));
+    
+});
+
+/**
+ * Get products list - Optimized with direct database queries
+ * Eliminates get_available_variations() overhead
+ */
+function peptidology_get_products_optimized($request) {
+    global $wpdb;
+    
+    $per_page = $request->get_param('per_page') ?: 38;
+    $page = $request->get_param('page') ?: 1;
+    $offset = ($page - 1) * $per_page;
+    
+    // Direct database query - much faster than WP_Query
+    $products = $wpdb->get_results($wpdb->prepare("
+        SELECT 
+            p.ID,
+            p.post_title,
+            p.post_name as slug,
+            p.post_excerpt as short_description,
+            pm_price.meta_value as price,
+            pm_regular.meta_value as regular_price,
+            pm_sale.meta_value as sale_price,
+            pm_stock.meta_value as stock_status,
+            pm_image.meta_value as image_id,
+            pm_gallery.meta_value as gallery_ids
+        FROM {$wpdb->posts} p
+        LEFT JOIN {$wpdb->postmeta} pm_price 
+            ON p.ID = pm_price.post_id AND pm_price.meta_key = '_price'
+        LEFT JOIN {$wpdb->postmeta} pm_regular 
+            ON p.ID = pm_regular.post_id AND pm_regular.meta_key = '_regular_price'
+        LEFT JOIN {$wpdb->postmeta} pm_sale 
+            ON p.ID = pm_sale.post_id AND pm_sale.meta_key = '_sale_price'
+        LEFT JOIN {$wpdb->postmeta} pm_stock 
+            ON p.ID = pm_stock.post_id AND pm_stock.meta_key = '_stock_status'
+        LEFT JOIN {$wpdb->postmeta} pm_image 
+            ON p.ID = pm_image.post_id AND pm_image.meta_key = '_thumbnail_id'
+        LEFT JOIN {$wpdb->postmeta} pm_gallery 
+            ON p.ID = pm_gallery.post_id AND pm_gallery.meta_key = '_product_image_gallery'
+        WHERE p.post_type = 'product'
+        AND p.post_status = 'publish'
+        ORDER BY p.menu_order ASC, p.post_title ASC
+        LIMIT %d OFFSET %d
+    ", $per_page, $offset));
+    
+    // Format for API response
+    $formatted_products = array();
+    foreach ($products as $product) {
+        $formatted_products[] = array(
+            'id' => (int)$product->ID,
+            'name' => $product->post_title,
+            'slug' => $product->slug,
+            'description' => $product->short_description,
+            'price' => floatval($product->price),
+            'regular_price' => floatval($product->regular_price),
+            'sale_price' => $product->sale_price ? floatval($product->sale_price) : null,
+            'on_sale' => !empty($product->sale_price),
+            'in_stock' => $product->stock_status === 'instock',
+            'image_url' => wp_get_attachment_url($product->image_id),
+            'permalink' => get_permalink($product->ID)
+        );
+    }
+    
+    return new WP_REST_Response(array(
+        'products' => $formatted_products,
+        'total' => (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type='product' AND post_status='publish'"),
+        'page' => $page,
+        'per_page' => $per_page
+    ), 200);
+}
+
+/**
+ * Get single product - Optimized
+ */
+function peptidology_get_product_optimized($request) {
+    $product_id = $request['id'];
+    $product = wc_get_product($product_id);
+    
+    if (!$product) {
+        return new WP_Error('product_not_found', 'Product not found', array('status' => 404));
+    }
+    
+    $data = array(
+        'id' => $product->get_id(),
+        'name' => $product->get_name(),
+        'slug' => $product->get_slug(),
+        'description' => $product->get_description(),
+        'short_description' => $product->get_short_description(),
+        'price' => floatval($product->get_price()),
+        'regular_price' => floatval($product->get_regular_price()),
+        'sale_price' => $product->get_sale_price() ? floatval($product->get_sale_price()) : null,
+        'on_sale' => $product->is_on_sale(),
+        'in_stock' => $product->is_in_stock(),
+        'stock_quantity' => $product->get_stock_quantity(),
+        'image_url' => wp_get_attachment_url($product->get_image_id()),
+        'gallery_urls' => array_map('wp_get_attachment_url', $product->get_gallery_image_ids()),
+        'permalink' => get_permalink($product_id),
+        'type' => $product->get_type()
+    );
+    
+    // Add variations if variable product (only when actually needed)
+    if ($product->is_type('variable')) {
+        $variations = array();
+        foreach ($product->get_available_variations() as $variation_data) {
+            $variations[] = array(
+                'variation_id' => $variation_data['variation_id'],
+                'attributes' => $variation_data['attributes'],
+                'price' => floatval($variation_data['display_price']),
+                'regular_price' => floatval($variation_data['display_regular_price']),
+                'in_stock' => $variation_data['is_in_stock'],
+                'image_url' => $variation_data['image']['url'] ?? null
+            );
+        }
+        $data['variations'] = $variations;
+    }
+    
+    return new WP_REST_Response($data, 200);
+}
+
+/**
+ * Get featured products
+ */
+function peptidology_get_featured_products($request) {
+    $limit = $request->get_param('limit') ?: 10;
+    
+    $args = array(
+        'post_type' => 'product',
+        'posts_per_page' => $limit,
+        'meta_query' => array(
+            array(
+                'key' => '_featured',
+                'value' => 'yes'
+            )
+        )
+    );
+    
+    $query = new WP_Query($args);
+    $products = array();
+    
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $product = wc_get_product(get_the_ID());
+            
+            $products[] = array(
+                'id' => $product->get_id(),
+                'name' => $product->get_name(),
+                'slug' => $product->get_slug(),
+                'price' => floatval($product->get_price()),
+                'image_url' => wp_get_attachment_url($product->get_image_id()),
+                'permalink' => get_permalink()
+            );
+        }
+    }
+    wp_reset_postdata();
+    
+    return new WP_REST_Response(array('products' => $products), 200);
+}
 
 
