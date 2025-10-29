@@ -181,6 +181,15 @@ function peptidology_scripts() {
 		wp_enqueue_script( 'comment-reply' );
 	}
 
+	// AJAX Cart Handler - Load on all pages for instant add-to-cart
+	wp_enqueue_script( 
+		'peptidology-ajax-cart', 
+		get_template_directory_uri() . '/js/ajax-cart.js', 
+		array('jquery'), 
+		'1.0.0', 
+		true 
+	);
+
 }
 add_action( 'wp_enqueue_scripts', 'peptidology_scripts' );
 

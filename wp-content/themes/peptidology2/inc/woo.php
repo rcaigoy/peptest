@@ -473,8 +473,7 @@ function add_price_to_add_to_cart_button( $button, $product ) {
 
         if ( empty( $in_stock_variations ) ) {
             // All variations are out of stock
-            $button = '<a class="out-of-stock-button cmn-btn cmn-btn-dark btn-rgt-icon cmn-btn-sm disabled" aria-disabled="true">Out of Stock</a>';
-        } else {
+            $button = '<a class="out-of-stock-button cmn-btn cmn-btn-dark btn-rgt-icon cmn-btn-sm disabled" aria-disabled="true">Out of Stock</a>';        } else {
             // Get the first in-stock variation
             $first_variation = reset( $in_stock_variations );
 
@@ -496,8 +495,7 @@ function add_price_to_add_to_cart_button( $button, $product ) {
             ),  $clean_url );
 
             $button = sprintf(
-                '<a href="%s" class="add_to_cart_button product_type_variable cmn-btn cmn-btn-dark btn-rgt-icon cmn-btn-sm" data-product_id="%d" data-variation_id="%d">%s</a>',
-                esc_url( $url ),
+                '<button type="button" class="add_to_cart_button ajax_add_to_cart_button product_type_variable cmn-btn cmn-btn-dark btn-rgt-icon cmn-btn-sm" data-product_id="%d" data-variation_id="%d" data-quantity="1">%s</button>',
                 $product->get_id(),
                 $variation_id,
                 'Add to Cart - ' . $variation_price
@@ -505,7 +503,7 @@ function add_price_to_add_to_cart_button( $button, $product ) {
         }
     } else {
         if ( ! $product->is_in_stock() ) {
-            $button = '<a class="out-of-stock-button cmn-btn cmn-btn-dark btn-rgt-icon cmn-btn-sm disabled" aria-disabled="true">Out of Stock</a>';
+            $button = '<button type="button" class="out-of-stock-button cmn-btn cmn-btn-dark btn-rgt-icon cmn-btn-sm disabled" aria-disabled="true" disabled>Out of Stock</button>';
         } else {
             $price = $product->get_price_html(); // This already includes sale price formatting
             $button = preg_replace( '/(.*?>)(Add to cart)(.*?)/i', '$1$2 - ' . $price . '$3', $button );
