@@ -606,36 +606,68 @@
 				continue;
 			}
 
-			$show_package = true;
+		$show_package = true;
+		
+		// DEBUG: Log package being evaluated
+		error_log( '🔍 SHIPPING INSURANCE: Evaluating package ' . $index . ' - ' . $package['name'] );
+		error_log( '🔍 SHIPPING INSURANCE: Is user logged in? ' . ( is_user_logged_in() ? 'YES' : 'NO' ) );
 
-			// Check user roles.
-			$package['roles'] = is_array( $package['roles'] ) ? $package['roles'] : array( $package['roles'] );
-			if ( ! in_array( 'all', $package['roles'], true ) && ! array_intersect( $package['roles'], $user_roles ) ) {
+		// Check user roles.
+		$package['roles'] = is_array( $package['roles'] ) ? $package['roles'] : array( $package['roles'] );
+		
+		// CUSTOM FIX: Treat guests as 'customer' role for insurance purposes
+		// This ensures guest checkout users can see insurance options
+		$effective_roles = $user_roles;
+		if ( empty( $effective_roles ) && ! is_user_logged_in() ) {
+			$effective_roles = array( 'customer' ); // Treat guests as customers
+			error_log( '🔍 SHIPPING INSURANCE: Guest user detected, treating as customer role' );
+		}
+		
+		error_log( '🔍 SHIPPING INSURANCE: Package roles: ' . print_r( $package['roles'], true ) );
+		error_log( '🔍 SHIPPING INSURANCE: Effective user roles: ' . print_r( $effective_roles, true ) );
+		
+		if ( ! in_array( 'all', $package['roles'], true ) && ! array_intersect( $package['roles'], $effective_roles ) ) {
+			$show_package = false;
+			error_log( '🔍 SHIPPING INSURANCE: ❌ Package blocked by ROLE filter' );
+		} else {
+			error_log( '🔍 SHIPPING INSURANCE: ✅ Package passed ROLE filter' );
+		}
+
+		// Check shipping classes.
+		$package['shipping_class'] = is_array( $package['shipping_class'] ) ? $package['shipping_class'] : array( $package['shipping_class'] );
+		error_log( '🔍 SHIPPING INSURANCE: Package shipping classes: ' . print_r( $package['shipping_class'], true ) );
+		if ( $show_package && ! in_array( 'all', $package['shipping_class'], true ) ) {
+			$class_found = false;
+			foreach ( $cart_items as $cart_item ) {
+				$product_shipping_classes = wc_get_product_terms( $cart_item['product_id'], 'product_shipping_class', array( 'fields' => 'ids' ) );
+				if ( array_intersect( $package['shipping_class'], $product_shipping_classes ) ) {
+					$class_found = true;
+					break;
+				}
+			}
+			if ( ! $class_found ) {
 				$show_package = false;
+				error_log( '🔍 SHIPPING INSURANCE: ❌ Package blocked by SHIPPING CLASS filter' );
+			} else {
+				error_log( '🔍 SHIPPING INSURANCE: ✅ Package passed SHIPPING CLASS filter' );
 			}
+		} else {
+			error_log( '🔍 SHIPPING INSURANCE: ✅ Package passed SHIPPING CLASS filter (set to all)' );
+		}
 
-			// Check shipping classes.
-			$package['shipping_class'] = is_array( $package['shipping_class'] ) ? $package['shipping_class'] : array( $package['shipping_class'] );
-			if ( $show_package && ! in_array( 'all', $package['shipping_class'], true ) ) {
-				$class_found = false;
-				foreach ( $cart_items as $cart_item ) {
-					$product_shipping_classes = wc_get_product_terms( $cart_item['product_id'], 'product_shipping_class', array( 'fields' => 'ids' ) );
-					if ( array_intersect( $package['shipping_class'], $product_shipping_classes ) ) {
-						$class_found = true;
-						break;
-					}
-				}
-				if ( ! $class_found ) {
-					$show_package = false;
-				}
+		// Check shipping zone restriction.
+		error_log( '🔍 SHIPPING INSURANCE: Package shipping zone: ' . ( isset( $package['shipping_zone'] ) ? $package['shipping_zone'] : 'not set' ) );
+		error_log( '🔍 SHIPPING INSURANCE: Current shipping zones: ' . print_r( $current_shipping_zones, true ) );
+		if ( $show_package && isset( $package['shipping_zone'] ) && 'all' !== $package['shipping_zone'] ) {
+			if ( ! in_array( (int) $package['shipping_zone'], $current_shipping_zones, true ) ) {
+				$show_package = false;
+				error_log( '🔍 SHIPPING INSURANCE: ❌ Package blocked by SHIPPING ZONE filter' );
+			} else {
+				error_log( '🔍 SHIPPING INSURANCE: ✅ Package passed SHIPPING ZONE filter' );
 			}
-
-			// Check shipping zone restriction.
-			if ( $show_package && isset( $package['shipping_zone'] ) && 'all' !== $package['shipping_zone'] ) {
-				if ( ! in_array( (int) $package['shipping_zone'], $current_shipping_zones, true ) ) {
-					$show_package = false;
-				}
-			}
+		} else {
+			error_log( '🔍 SHIPPING INSURANCE: ✅ Package passed SHIPPING ZONE filter (set to all)' );
+		}
 
 			// Check membership restriction (if WooCommerce Memberships is active).
 			if ( $show_package && class_exists( 'WC_Memberships' ) && isset( $package['memberships'] ) && 'all' !== $package['memberships'] ) {
@@ -680,9 +712,12 @@
 			}
 			// ***** End Minimum Cart Value Check *****
 
-			if ( $show_package ) {
-				$filtered_packages[ $index ] = $package;
-			}
+		if ( $show_package ) {
+			$filtered_packages[ $index ] = $package;
+			error_log( '🔍 SHIPPING INSURANCE: ✅✅ Package ' . $index . ' PASSED ALL FILTERS - Added to filtered list' );
+		} else {
+			error_log( '🔍 SHIPPING INSURANCE: ❌❌ Package ' . $index . ' FAILED - Not added to filtered list' );
+		}
 		}
 
 		// If no package is selected in session, check for a default option defined in settings.
@@ -729,7 +764,25 @@
 						}
 					}
 				}
-				$selected_package = $default_index;
+			$selected_package = $default_index;
+			
+			// CRITICAL FIX: Save the determined default to session so fee calculation can find it
+			// IMPORTANT: Use !== '' instead of !empty() because empty("0") returns TRUE in PHP!
+			error_log( '🔍 SHIPPING INSURANCE: About to save default - selected_package: "' . $selected_package . '"' );
+			error_log( '🔍 SHIPPING INSURANCE: WC() exists? ' . ( WC() ? 'YES' : 'NO' ) );
+			error_log( '🔍 SHIPPING INSURANCE: WC()->session exists? ' . ( WC() && WC()->session ? 'YES' : 'NO' ) );
+			
+			if ( '' !== $selected_package && null !== $selected_package ) {
+				// Ensure session is initialized for guest users
+				if ( WC() && WC()->session ) {
+					WC()->session->set( 'shipping_insurance_package', $selected_package );
+					error_log( '🔍 SHIPPING INSURANCE: ✅ Saved default to session: ' . $selected_package );
+				} else {
+					error_log( '🔍 SHIPPING INSURANCE: ❌ CRITICAL: WC()->session not available! Cannot save default.' );
+				}
+			} else {
+				error_log( '🔍 SHIPPING INSURANCE: ❌ selected_package is empty/null, not saving to session' );
+			}
 		} else {
 			error_log( '🔍 SHIPPING INSURANCE: ⚙️  No admin default configured (not most/least expensive)' );
 			// CUSTOM FIX: If no default option is configured, select the first available package
@@ -740,8 +793,20 @@
 			if ( ! empty( $filtered_packages ) ) {
 				$package_keys = array_keys( $filtered_packages );
 				error_log( '🔍 SHIPPING INSURANCE: Package keys: ' . print_r( $package_keys, true ) );
-				$selected_package = $package_keys[0];
-				error_log( '🔍 SHIPPING INSURANCE: ✅ Selected first package: ' . $selected_package );
+			$selected_package = $package_keys[0];
+			error_log( '🔍 SHIPPING INSURANCE: ✅ Selected first package: ' . $selected_package );
+			
+			// CRITICAL FIX: Save the determined default to session so fee calculation can find it
+			// IMPORTANT: Use !== '' instead of !empty() because empty("0") returns TRUE in PHP!
+			error_log( '🔍 SHIPPING INSURANCE: About to save first package - WC()->session exists? ' . ( WC() && WC()->session ? 'YES' : 'NO' ) );
+			if ( '' !== $selected_package && null !== $selected_package ) {
+				if ( WC() && WC()->session ) {
+					WC()->session->set( 'shipping_insurance_package', $selected_package );
+					error_log( '🔍 SHIPPING INSURANCE: ✅ Saved default to session: ' . $selected_package );
+				} else {
+					error_log( '🔍 SHIPPING INSURANCE: ❌ CRITICAL: WC()->session not available! Cannot save default.' );
+				}
+			}
 			} else {
 				error_log( '🔍 SHIPPING INSURANCE: ❌ filtered_packages is empty, cannot select default' );
 			}

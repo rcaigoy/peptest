@@ -57,6 +57,19 @@ wp-content/plugins/*/
 !wp-content/plugins/*/peptidology-config.json
 !wp-content/plugins/*/custom-settings.php
 
+!wp-content/mu-plugins/*
+
+# MODIFIED PLUGIN FILES (track but don't commit - for local fixes)
+# To revert: git checkout HEAD -- wp-content/plugins/shipping-insurance-manager/public/class-shipping-insurance-manager-public.php
+# Un-ignore directories needed to reach the specific file
+!wp-content/plugins/shipping-insurance-manager/
+!wp-content/plugins/shipping-insurance-manager/public/
+# Re-ignore everything in those directories
+wp-content/plugins/shipping-insurance-manager/*
+wp-content/plugins/shipping-insurance-manager/public/*
+# ONLY track this one specific file
+!wp-content/plugins/shipping-insurance-manager/public/class-shipping-insurance-manager-public.php
+
 # EXCLUDE ALL THEMES except peptidology custom themes
 wp-content/themes/*/
 !wp-content/themes/index.php
