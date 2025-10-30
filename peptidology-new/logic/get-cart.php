@@ -5,6 +5,9 @@
  * Shared between API endpoint and theme templates
  */
 
+  // ensure no one can call this include file directly
+if (count(get_included_files()) == 1) exit("Direct access not permitted.");
+
 /**
  * Get current cart data
  * 

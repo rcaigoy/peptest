@@ -189,6 +189,24 @@ function peptidology_scripts() {
 		'1.0.0', 
 		true 
 	);
+	
+	// AJAX Cart Remove Handler - Makes X button instant (no page reload)
+	wp_enqueue_script( 
+		'peptidology-ajax-cart-remove', 
+		get_template_directory_uri() . '/js/ajax-cart-remove.js', 
+		array('jquery'), 
+		'1.0.0', 
+		true 
+	);
+	
+	// AJAX Cart Quantity Handler - Makes +/- buttons instant (no page reload)
+	wp_enqueue_script( 
+		'peptidology-ajax-cart-quantity', 
+		get_template_directory_uri() . '/js/ajax-cart-quantity.js', 
+		array('jquery'), 
+		'1.0.0', 
+		true 
+	);
 
 }
 add_action( 'wp_enqueue_scripts', 'peptidology_scripts' );
