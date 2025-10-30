@@ -6208,3 +6208,7 @@ header.main-head.fixed .navbar {
 .footer-menu-list.last_area li {
     margin-bottom: 10px;
 }
+
+a.added_to_cart.wc-forward {
+    display: none !important;
+}

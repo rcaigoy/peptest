@@ -213,7 +213,11 @@ add_filter( 'wc_add_to_cart_message_html', function( $message, $products ) {
     return $message;
 }, 10, 2 );
 
-
+// Hide "View cart" link that appears after adding to cart
+add_action( 'wp_head', 'hide_view_cart_link' );
+function hide_view_cart_link() {
+    echo '<style>a.added_to_cart.wc-forward { display: none !important; }</style>';
+}
 
 add_filter( 'woocommerce_get_availability_text', 'hide_in_stock_text', 10, 2 );
 function hide_in_stock_text( $availability, $product ) {
